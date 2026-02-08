@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flake8-logging-statement-id"
+version = "1.0.0"
+description = "Lint rule: enforce statement_id UUID in every logging extra dict"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+classifiers = ["Framework :: Flake8", "Programming Language :: Python :: 3"]
+
+[tool.setuptools]
+py-modules = ["flake8_logging_statement_id"]
+
+[project.entry-points."flake8.extension"]
+LOG = "flake8_logging_statement_id:LoggingStatementIdChecker"

@@ -1,0 +1,6 @@
+- id: logging-statement-id
+  name: Check & fix logging statement_id UUIDs
+  entry: python -m flake8_logging_statement_id --fix
+  language: python
+  types: [python]
+  pass_filenames: true
