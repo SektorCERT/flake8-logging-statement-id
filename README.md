@@ -40,13 +40,13 @@ logger.warning("Slow", extra={"statement_id": "deadbeef-..."})
 
 | Code   | Description                                    | Auto-fix? |
 |--------|------------------------------------------------|-----------|
-| LOG001 | Logging call missing `extra` kwarg             | ✅ Yes    |
-| LOG002 | `extra` is not a dict literal (e.g. a variable)| ❌ No     |
-| LOG003 | `extra` dict missing `statement_id` key        | ✅ Yes    |
-| LOG004 | `statement_id` value is not a string literal   | ❌ No     |
-| LOG005 | `statement_id` value is not a valid UUID       | ✅ Yes    |
+| LSI001 | Logging call missing `extra` kwarg             | ✅ Yes    |
+| LSI002 | `extra` is not a dict literal (e.g. a variable)| ❌ No     |
+| LSI003 | `extra` dict missing `statement_id` key        | ✅ Yes    |
+| LSI004 | `statement_id` value is not a string literal   | ❌ No     |
+| LSI005 | `statement_id` value is not a valid UUID       | ✅ Yes    |
 
-LOG002 and LOG004 require manual fixes because the tool can't safely modify non-literal expressions.
+LSI002 and LSI004 require manual fixes because the tool can't safely modify non-literal expressions.
 
 ## Installation & Usage
 
@@ -61,7 +61,7 @@ Add to your `.pre-commit-config.yaml`:
     - id: logging-statement-id
 ```
 
-This will auto-fix files on commit. If unfixable violations remain (LOG002/LOG004), the commit will be blocked with a clear error message.
+This will auto-fix files on commit. If unfixable violations remain (LSI002/LSI004), the commit will be blocked with a clear error message.
 
 ### Standalone
 
@@ -77,18 +77,49 @@ python flake8_logging_statement_id.py --fix src/**/*.py
 
 ```bash
 pip install -e .
-flake8 --select=LOG your_project/
+flake8 --select=LSI your_project/
 ```
 
 ## Detected logging patterns
 
-The rule catches all standard logging methods called as attributes:
+A call is treated as a logging call when all three hold:
 
-- `logging.info(...)`, `logging.debug(...)`, etc.
-- `logger.info(...)`, `log.warning(...)`, `LOG.error(...)`
-- `self.logger.critical(...)`, `self.log.exception(...)`
+1. The method is one of `debug`, `info`, `warning`, `error`, `critical`, `exception`, `log`, `fatal`.
+2. It passes a message (a positional argument or `msg=`; `log` also needs a level).
+3. The receiver looks like a logger:
+   - its last name segment is `log`, `logger` or `logging` in any case, optionally with a snake_case or camelCase prefix: `logger`, `LOG`, `self._log`, `audit_logger`, `auditLogger`
+   - or it is a direct `logging.getLogger(...)` / `.getChild(...)` call
+   - or it is a name assigned from `getLogger(...)` / `getChild(...)` in the same file (`audit = logging.getLogger("audit")`), or an `import logging as x` alias
 
-Methods: `debug`, `info`, `warning`, `error`, `critical`, `exception`, `log`, `fatal`
+So `retry_state.outcome.exception()`, `math.log(x)` and `parser.error("...")` are left alone.
+
+### Loggers with other names
+
+A logger with an unrecognised name that is imported from another module (`from app import audit`) is not detected. Add a regex for such names:
+
+```yaml
+- id: logging-statement-id
+  args: [--logger-names, '^(audit|tracer)$']
+```
+
+The same option exists in flake8 mode (`--logger-names`, or `logger-names` in the flake8 config).
+
+### Suppressing a call
+
+If a non-logging call is matched anyway, add `# noqa: LSI001` (or a bare `# noqa`) on any line of the call:
+
+```python
+err = job_log.exception("lookup")  # noqa: LSI001
+```
+
+If you run Ruff with `RUF100` enabled, declare the prefix so Ruff does not remove these comments as unknown:
+
+```toml
+[lint]
+external = ["LSI"]
+```
+
+In flake8 mode, flake8's own `# noqa` handling applies, which only looks at the line the error is reported on.
 
 ## Generating UUIDs manually
 

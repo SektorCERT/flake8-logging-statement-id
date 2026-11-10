@@ -15,4 +15,4 @@ classifiers = ["Framework :: Flake8", "Programming Language :: Python :: 3"]
 py-modules = ["flake8_logging_statement_id"]
 
 [project.entry-points."flake8.extension"]
-LOG = "flake8_logging_statement_id:LoggingStatementIdChecker"
+LSI = "flake8_logging_statement_id:LoggingStatementIdChecker"
