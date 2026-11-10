@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flake8-logging-statement-id"
-version = "1.0.0"
+version = "2.0.0"
 description = "Lint rule: enforce statement_id UUID in every logging extra dict"
 readme = "README.md"
 requires-python = ">=3.9"

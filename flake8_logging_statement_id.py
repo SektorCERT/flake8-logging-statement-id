@@ -45,7 +45,7 @@ import tokenize
 import uuid
 from typing import Any, Generator
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 UUID_PATTERN = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",

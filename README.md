@@ -56,7 +56,7 @@ Add to your `.pre-commit-config.yaml`:
 
 ```yaml
 - repo: https://github.com/SektorCERT/flake8-logging-statement-id
-  rev: v1.0.0
+  rev: v2.0.0
   hooks:
     - id: logging-statement-id
 ```
