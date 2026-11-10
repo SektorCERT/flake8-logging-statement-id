@@ -367,13 +367,18 @@ def _fix_call_node(node: ast.Call, error_msg: str) -> ast.Call | None:
 
 
 def _offset(source: str, line: int, col: int) -> int:
-    """Convert 1-based line + 0-based col to a 0-based character offset."""
-    off = 0
-    for i, src_line in enumerate(source.splitlines(keepends=True), start=1):
-        if i == line:
-            return off + col
-        off += len(src_line)
-    return off + col
+    """
+    Convert an AST position (1-based line, 0-based UTF-8 *byte* column) to a
+    0-based character offset into `source`.
+    """
+    # Split on "\n" only, like the parser does; str.splitlines() also breaks
+    # on form feeds and other separators that can occur inside string literals.
+    lines = source.split("\n")
+    off = sum(len(src_line) + 1 for src_line in lines[: line - 1])
+    if line > len(lines):
+        return off + col
+    prefix = lines[line - 1].encode("utf-8")[:col]
+    return off + len(prefix.decode("utf-8", errors="ignore"))
 
 
 def _get_call_span(source: str, node: ast.Call) -> tuple[int, int] | None:

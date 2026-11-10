@@ -34,6 +34,10 @@ logger.error(
     exc_info=True,
 )
 
+# Non-ASCII text on the line — LSI001, the following line must stay intact
+logger.info("Værdi æøå"); logger.info("efter")
+x = "næste linje"
+
 # self.logger pattern — LSI001
 class MyService:
     def run(self):
